@@ -1,0 +1,54 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مکعب سه‌بعدی هلدینگ تمرین</title><style>
+*{box-sizing:border-box}body{margin:0;background:#07111f;color:#edf6ff;font-family:Tahoma,Arial}header{padding:18px 20px;background:#101f33;border-bottom:1px solid #29415d}h1{font-size:21px;margin:0 0 8px}header p{margin:0;color:#b9c9dc;font-size:13px;line-height:1.9}main{max-width:1400px;margin:auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}#stage{height:76vh;min-height:500px;border:1px solid #2a405c;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#1a3552,#07111f 75%);touch-action:none}canvas{display:block;width:100%;height:100%}aside{background:#101f33;border:1px solid #2a405c;border-radius:18px;padding:16px}h2{font-size:16px;margin:0 0 12px}#detail{font-size:13px;line-height:2;white-space:pre-line;min-height:150px;color:#e4eef9}.legend{display:grid;gap:9px;margin:14px 0}.item{display:flex;align-items:center;gap:9px;font-size:12px;color:#d3e0ef}.dot{width:12px;height:12px;border-radius:50%;display:inline-block}button{background:#203a59;border:1px solid #496482;color:white;padding:9px 12px;border-radius:9px;margin:4px;cursor:pointer}.hint{font-size:11px;line-height:1.9;color:#aebfd4}@media(max-width:850px){main{grid-template-columns:1fr}#stage{height:58vh;min-height:390px}}
+</style></head><body><header><h1>مکعب سه‌بعدی هلدینگ تمرین</h1><p>ساختار حجمی و مکعبی؛ شرکت‌ها در چهار ناحیه پیرامونی و حوزه‌های وظیفه به‌صورت گره‌های شناور درون مکعب. با لمس و کشیدن، مکعب را بچرخانید؛ برای دیدن ارتباط‌ها روی گره‌ها بزنید.</p></header><main><div id="stage"></div><aside><h2>اطلاعات گره انتخاب‌شده</h2><div id="detail">برای مشاهده شرح وظیفه و شرکت‌های مرتبط، یکی از گره‌های نورانی داخل مکعب یا یکی از نشانگرهای شرکت را انتخاب کنید.</div><div class="legend"><div class="item"><i class="dot" style="background:#39a9ff"></i>مرکز مشاوره</div><div class="item"><i class="dot" style="background:#36d6a5"></i>مدارس مرجع</div><div class="item"><i class="dot" style="background:#ffbd59"></i>تمرین</div><div class="item"><i class="dot" style="background:#b78aff"></i>مدارس مجری</div><div class="item"><i class="dot" style="background:#f2fbff"></i>گره وظیفه</div></div><button id="reset">نمای اولیه</button><button id="spin">چرخش خودکار: خاموش</button><p class="hint">گره‌های وظیفه داخل حجم مکعب قرار دارند و خطوط رنگی، ارتباط آن‌ها با شرکت‌های مرتبط را نشان می‌دهند. این چیدمان عمداً جدول سطری و ستونی نیست.</p></aside></main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script><script>
+const companies=[
+{name:'مرکز مشاوره',color:0x39a9ff,pos:[-5.0,2.8,2.2]},
+{name:'مدارس مرجع',color:0x36d6a5,pos:[5.0,2.8,-2.2]},
+{name:'تمرین',color:0xffbd59,pos:[-5.0,-2.8,-2.2]},
+{name:'مدارس مجری',color:0xb78aff,pos:[5.0,-2.8,2.2]}
+];
+const tasks=[
+['تحقیق و توسعه',['تمرین','مرکز مشاوره']],
+['طراحی محتوا و ابزار',['تمرین','مرکز مشاوره']],
+['تربیت مربی و منتور',['تمرین','مرکز مشاوره','مدارس مرجع']],
+['ارائه خدمات مستقل',['تمرین','مرکز مشاوره']],
+['آزمایشگاه نوروسایکولوژی',['مدارس مرجع','مدارس مجری','مرکز مشاوره']],
+['ارزیابی و پایش',['مدارس مرجع','مرکز مشاوره','مدارس مجری']],
+['پشتیبانی و توسعه مدارس',['تمرین','مدارس مرجع']],
+['شبکه‌سازی',['مدارس مرجع','مدارس مجری','مرکز مشاوره','تمرین']],
+['هدایت مسیر رشد و اتصال به آینده',['تمرین','مرکز مشاوره']],
+['مدیریت دانش',['مدارس مرجع','مدارس مجری','مرکز مشاوره']]
+];
+const host=document.getElementById('stage');
+if(typeof THREE==='undefined'){host.innerHTML='<div style="padding:24px;text-align:center;color:#fff;line-height:2">کتابخانه سه‌بعدی بارگذاری نشد. اینترنت را بررسی کنید و صفحه را دوباره بارگذاری کنید.</div>';throw new Error('Three.js failed to load');}
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x071525);scene.fog=new THREE.Fog(0x071525,18,42);
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(13,9,15);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xdff7ff,0x26364e,2.1));const dl=new THREE.DirectionalLight(0xffffff,2.4);dl.position.set(8,12,10);scene.add(dl);const pl=new THREE.PointLight(0x37baff,32,35);pl.position.set(-5,5,-5);scene.add(pl);
+const root=new THREE.Group();scene.add(root);const clickables=[];
+const glass=(c,o)=>new THREE.MeshPhysicalMaterial({color:c,transparent:true,opacity:o,roughness:.16,metalness:.12,clearcoat:1,side:THREE.DoubleSide,depthWrite:false});
+// مکعب شفاف اصلی و چند مکعب سیمی تو در تو، مطابق مرجع تصویری
+const shell=new THREE.Mesh(new THREE.BoxGeometry(10,10,10),glass(0x2e9eea,.025));root.add(shell);
+const edgeMat=new THREE.LineBasicMaterial({color:0x53cfff,transparent:true,opacity:.9});
+root.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(10,10,10)),edgeMat));
+[7.2,5.0,2.8].forEach((size,i)=>{const g=new THREE.BoxGeometry(size,size,size);const e=new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:[0x35c8ff,0x42e0c1,0x8b9dff][i],transparent:true,opacity:.48}));root.add(e);});
+// بستر نورانی زیر مکعب
+const base=new THREE.Mesh(new THREE.TorusGeometry(7.2,.025,8,120),new THREE.MeshBasicMaterial({color:0x28bfff,transparent:true,opacity:.65}));base.rotation.x=Math.PI/2;base.position.y=-5.6;root.add(base);
+function labelSprite(text,color,w=2.0,h=.72){const c=document.createElement('canvas');c.width=768;c.height=280;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.fillStyle='rgba(4,18,35,.78)';x.strokeStyle='#'+color.toString(16).padStart(6,'0');x.lineWidth=7;roundRect(x,16,18,736,244,46);x.fill();x.stroke();x.fillStyle='#ffffff';x.textAlign='center';x.textBaseline='middle';x.direction='rtl';x.font='bold 48px Tahoma, Arial';let lines=wrapText(text,20);if(lines.length>2)lines=[lines[0],lines.slice(1).join(' ')];const lineH=62,start=140-(lines.length-1)*lineH/2;lines.forEach((line,i)=>x.fillText(line,384,start+i*lineH,690));const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false});const sp=new THREE.Sprite(mat);sp.scale.set(w,h,1);sp.renderOrder=10;return sp;}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function wrapText(text,max){const words=text.split(' '),lines=[];let line='';for(const word of words){if((line+' '+word).trim().length>max&&line){lines.push(line);line=word;}else line=(line+' '+word).trim();}if(line)lines.push(line);return lines;}
+function sphere(pos,r,color,info,label,company=false){const m=new THREE.Mesh(new THREE.SphereGeometry(r,32,24),new THREE.MeshPhysicalMaterial({color,emissive:color,emissiveIntensity:.3,roughness:.15,metalness:.15,clearcoat:1}));m.position.set(...pos);m.userData.info=info;root.add(m);clickables.push(m);const glow=new THREE.Mesh(new THREE.SphereGeometry(r*1.12,24,18),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.10,side:THREE.BackSide}));glow.position.copy(m.position);root.add(glow);const tag=labelSprite(label,color,company?2.15:2.35,.78);tag.position.set(pos[0],pos[1],pos[2]+r+.08);root.add(tag);return m;}
+function beam(a,b,color,opacity=.42){const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]);root.add(new THREE.Line(g,new THREE.LineBasicMaterial({color,transparent:true,opacity})));}
+companies.forEach(c=>{sphere(c.pos,.62,c.color,`شرکت: ${c.name}\nاین گره، جایگاه شرکت در ساختار هلدینگ را نشان می‌دهد.`,c.name,true);});
+const positions=[[-2.2,2.5,1.7],[0,3.1,-1.5],[2.1,1.8,1.7],[-2.5,.2,-1.8],[2.3,-.2,-1.8],[-.1,-1.5,2.0],[2.2,-2.2,.7],[-2.1,-2.4,-.8],[.1,.4,.1],[.1,-3.2,-2.0]];
+tasks.forEach((t,i)=>{const p=positions[i];sphere(p,.48,0x7edfff,`حوزه وظیفه: ${t[0]}\nشرکت‌های مرتبط: ${t[1].join('، ')}\nتعداد شرکت‌های درگیر: ${t[1].length}`,t[0],false);t[1].forEach(n=>{const c=companies.find(x=>x.name===n);beam(p,c.pos,c.color,.5);});});
+const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let dragging=false,lastX=0,lastY=0,auto=false,moved=false;
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(host);resize();
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerup',()=>dragging=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>2)moved=true;root.rotation.y+=dx*.006;root.rotation.x+=dy*.005;lastX=e.clientX;lastY=e.clientY;});
+renderer.domElement.addEventListener('click',e=>{if(moved)return;const r=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1));ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(clickables);if(hits.length)document.getElementById('detail').innerText=hits[0].object.userData.info;});
+document.getElementById('reset').onclick=()=>{root.rotation.set(0,0,0);camera.position.set(13,9,15);camera.lookAt(0,0,0)};document.getElementById('spin').onclick=e=>{auto=!auto;e.target.textContent='چرخش خودکار: '+(auto?'روشن':'خاموش')};
+function animate(){requestAnimationFrame(animate);if(auto&&!dragging)root.rotation.y+=.002;renderer.render(scene,camera)}animate();
+</script></body></html>
